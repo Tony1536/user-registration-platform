@@ -7,8 +7,7 @@ services:
       - "5000:5000"
     environment:
       - AWS_REGION=us-east-1
-    networks:
-      - mynetwork
+    network_mode: host  
 
   frontend:
     build: ./frontend
