@@ -1,3 +1,6 @@
+// Cambia esto con la IP pública de tu EC2
+const backendBaseURL = 'http://13.221.72.191:5000';
+
 // Register User
 document.getElementById('registerForm').addEventListener('submit', async function(e) {
     e.preventDefault();
@@ -8,7 +11,7 @@ document.getElementById('registerForm').addEventListener('submit', async functio
         country: document.getElementById('country').value
     };
 
-    const response = await fetch('/api/register', {
+    const response = await fetch(`${backendBaseURL}/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData)
@@ -41,7 +44,7 @@ document.getElementById('uploadForm').addEventListener('submit', async function(
     const uploadProgress = document.getElementById('uploadProgress');
     uploadProgress.innerText = 'Uploading...';
 
-    const response = await fetch('/api/upload', {
+    const response = await fetch(`${backendBaseURL}/upload`, {
         method: 'POST',
         body: formData
     });
