@@ -13,7 +13,7 @@ document.getElementById('registerForm').addEventListener('submit', async functio
     try {
         console.log("Sending register request:", userData);
 
-        const response = await fetch(`${backendBaseURL}/register`, {
+        const response = await fetch(`${backendBaseURL}/api/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(userData)
@@ -61,7 +61,7 @@ document.getElementById('uploadForm').addEventListener('submit', async function(
     try {
         console.log("Sending file upload request:", file.name);
 
-        const response = await fetch(`${backendBaseURL}/upload`, {
+        const response = await fetch(`${backendBaseURL}/api/upload`, {
             method: 'POST',
             body: formData
         });
