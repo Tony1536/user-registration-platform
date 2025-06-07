@@ -5,41 +5,57 @@ import os
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)
+CORS(app)  # Enable CORS for all routes
 
-session = boto3.Session(region_name=os.getenv('AWS_REGION', 'us-east-1'))
+# DynamoDB client
+dynamodb = boto3.resource('dynamodb', region_name=os.getenv('AWS_REGION', 'us-east-1'))
+table = dynamodb.Table('clients-information')  # <-- usa la misma que en el código frontend
 
-# DynamoDB
-dynamodb = session.resource('dynamodb')
-table = dynamodb.Table('users-registration')
+# S3 client
+s3 = boto3.client('s3', region_name=os.getenv('AWS_REGION', 'us-east-1'))
+bucket_name = 'myapp-userfiles'  # <-- reemplaza con tu bucket real
 
-# S3
-s3 = session.client('s3')
-bucket_name = 'myapp-userfiles'
-
+# Endpoint para registrar usuario
 @app.route('/api/register', methods=['POST'])
 def register():
-    data = request.get_json()
-    user_id = str(uuid.uuid4())
+    try:
+        data = request.get_json()
+        user_id = str(uuid.uuid4())
 
-    table.put_item(Item={
-        'user_id': user_id,
-        'name': data['name'],
-        'email': data['email'],
-        'country': data['country'],
-        'file_s3_key': ''
-    })
+        table.put_item(Item={
+            'user_id': user_id,
+            'name': data['name'],
+            'email': data['email'],
+            'country': data['country'],
+            'file_s3_key': ''  # initially empty
+        })
 
-    return jsonify({'message': 'User registered successfully', 'user_id': user_id})
+        return jsonify({'message': 'User registered successfully', 'user_id': user_id})
+    
+    except Exception as e:
+        print(f"Error registering user: {str(e)}")
+        return jsonify({'message': f'Failed to register user. Error: {str(e)}'}), 500
 
+# Endpoint para subir archivo
 @app.route('/api/upload', methods=['POST'])
 def upload():
-    file = request.files['file']
-    file_key = f"{str(uuid.uuid4())}_{file.filename}"
+    try:
+        if 'file' not in request.files:
+            return jsonify({'message': 'No file part in the request'}), 400
 
-    s3.upload_fileobj(file, bucket_name, file_key)
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'message': 'No file selected'}), 400
 
-    return jsonify({'message': 'File uploaded successfully!', 'file_key': file_key})
+        file_key = f"{str(uuid.uuid4())}_{file.filename}"
+
+        s3.upload_fileobj(file, bucket_name, file_key)
+
+        return jsonify({'message': 'File uploaded successfully!', 'file_key': file_key})
+
+    except Exception as e:
+        print(f"Error uploading file: {str(e)}")
+        return jsonify({'message': f'Failed to upload file. Error: {str(e)}'}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)

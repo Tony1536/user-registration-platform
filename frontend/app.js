@@ -6,29 +6,39 @@ document.getElementById('registerForm').addEventListener('submit', async functio
     e.preventDefault();
 
     const userData = {
-        name: document.getElementById('name').value,
-        email: document.getElementById('email').value,
-        country: document.getElementById('country').value
+        name: document.getElementById('name').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        country: document.getElementById('country').value.trim()
     };
 
-    const response = await fetch(`${backendBaseURL}/api/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userData)
-    });
+    try {
+        const response = await fetch(`${backendBaseURL}/api/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(userData)
+        });
 
-    const result = await response.json();
-    alert(result.message);
+        if (!response.ok) {
+            const errorResult = await response.json();
+            throw new Error(errorResult.message || 'Error registering user');
+        }
 
-    // Optionally update the users table (demo only — in real app, you'd fetch the list again)
-    const table = document.getElementById('usersTable').getElementsByTagName('tbody')[0];
-    const newRow = table.insertRow();
-    newRow.insertCell(0).innerText = userData.name;
-    newRow.insertCell(1).innerText = userData.email;
-    newRow.insertCell(2).innerText = userData.country;
+        const result = await response.json();
+        alert(result.message);
 
-    // Reset form
-    document.getElementById('registerForm').reset();
+        // Add user to the table (demo only — in real app, you'd fetch the list again)
+        const table = document.getElementById('usersTable').getElementsByTagName('tbody')[0];
+        const newRow = table.insertRow();
+        newRow.insertCell(0).innerText = userData.name;
+        newRow.insertCell(1).innerText = userData.email;
+        newRow.insertCell(2).innerText = userData.country;
+
+        // Reset form
+        document.getElementById('registerForm').reset();
+    } catch (error) {
+        console.error('Registration failed:', error);
+        alert(`Registration failed: ${error.message}`);
+    }
 });
 
 // Upload File
@@ -38,20 +48,35 @@ document.getElementById('uploadForm').addEventListener('submit', async function(
     const fileInput = document.getElementById('fileInput');
     const file = fileInput.files[0];
 
+    if (!file) {
+        alert('Please select a file to upload.');
+        return;
+    }
+
     const formData = new FormData();
     formData.append('file', file);
 
     const uploadProgress = document.getElementById('uploadProgress');
     uploadProgress.innerText = 'Uploading...';
 
-    const response = await fetch(`${backendBaseURL}/api/upload`, {
-        method: 'POST',
-        body: formData
-    });
+    try {
+        const response = await fetch(`${backendBaseURL}/api/upload`, {
+            method: 'POST',
+            body: formData
+        });
 
-    const result = await response.json();
-    alert(result.message);
+        if (!response.ok) {
+            const errorResult = await response.json();
+            throw new Error(errorResult.message || 'Error uploading file');
+        }
 
-    uploadProgress.innerText = '';
-    document.getElementById('uploadForm').reset();
+        const result = await response.json();
+        alert(result.message);
+
+        uploadProgress.innerText = 'Upload completed successfully.';
+        document.getElementById('uploadForm').reset();
+    } catch (error) {
+        console.error('Upload failed:', error);
+        uploadProgress.innerText = `Upload failed: ${error.message}`;
+    }
 });
