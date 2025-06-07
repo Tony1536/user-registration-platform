@@ -1,4 +1,3 @@
-// Cambia esto con la IP pública de tu EC2
 const backendBaseURL = 'http://13.221.72.191:5000';
 
 // Register User
@@ -6,38 +5,43 @@ document.getElementById('registerForm').addEventListener('submit', async functio
     e.preventDefault();
 
     const userData = {
-        name: document.getElementById('name').value.trim(),
-        email: document.getElementById('email').value.trim(),
-        country: document.getElementById('country').value.trim()
+        name: document.getElementById('name').value,
+        email: document.getElementById('email').value,
+        country: document.getElementById('country').value
     };
 
     try {
+        console.log("Sending register request:", userData);
+
         const response = await fetch(`${backendBaseURL}/api/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(userData)
         });
 
-        if (!response.ok) {
-            const errorResult = await response.json();
-            throw new Error(errorResult.message || 'Error registering user');
-        }
+        console.log("Response status:", response.status);
 
         const result = await response.json();
-        alert(result.message);
+        console.log("Response body:", result);
 
-        // Add user to the table (demo only — in real app, you'd fetch the list again)
-        const table = document.getElementById('usersTable').getElementsByTagName('tbody')[0];
-        const newRow = table.insertRow();
-        newRow.insertCell(0).innerText = userData.name;
-        newRow.insertCell(1).innerText = userData.email;
-        newRow.insertCell(2).innerText = userData.country;
+        if (response.ok) {
+            alert(result.message);
 
-        // Reset form
-        document.getElementById('registerForm').reset();
+            // Update the users table
+            const table = document.getElementById('usersTable').getElementsByTagName('tbody')[0];
+            const newRow = table.insertRow();
+            newRow.insertCell(0).innerText = userData.name;
+            newRow.insertCell(1).innerText = userData.email;
+            newRow.insertCell(2).innerText = userData.country;
+
+            document.getElementById('registerForm').reset();
+        } else {
+            alert(`Failed to register user. Server says: ${result.message}`);
+        }
+
     } catch (error) {
-        console.error('Registration failed:', error);
-        alert(`Registration failed: ${error.message}`);
+        console.error("Error during register fetch:", error);
+        alert(`Failed to register user. Error: ${error}`);
     }
 });
 
@@ -48,11 +52,6 @@ document.getElementById('uploadForm').addEventListener('submit', async function(
     const fileInput = document.getElementById('fileInput');
     const file = fileInput.files[0];
 
-    if (!file) {
-        alert('Please select a file to upload.');
-        return;
-    }
-
     const formData = new FormData();
     formData.append('file', file);
 
@@ -60,38 +59,29 @@ document.getElementById('uploadForm').addEventListener('submit', async function(
     uploadProgress.innerText = 'Uploading...';
 
     try {
+        console.log("Sending file upload request:", file.name);
+
         const response = await fetch(`${backendBaseURL}/api/upload`, {
             method: 'POST',
             body: formData
         });
 
-        if (!response.ok) {
-            const errorResult = await response.json();
-            throw new Error(errorResult.message || 'Error uploading file');
-        }
+        console.log("Upload response status:", response.status);
 
         const result = await response.json();
-        alert(result.message);
+        console.log("Upload response body:", result);
 
-        uploadProgress.innerText = 'Upload completed successfully.';
-        document.getElementById('uploadForm').reset();
+        if (response.ok) {
+            alert(result.message);
+        } else {
+            alert(`Failed to upload file. Server says: ${result.message}`);
+        }
+
     } catch (error) {
-        console.error('Upload failed:', error);
-        uploadProgress.innerText = `Upload failed: ${error.message}`;
+        console.error("Error during file upload fetch:", error);
+        alert(`Failed to upload file. Error: ${error}`);
     }
-});
-// Load users on page load
-window.addEventListener('DOMContentLoaded', async function() {
-    const response = await fetch(`${backendBaseURL}/api/users`);
-    const users = await response.json();
 
-    const table = document.getElementById('usersTable').getElementsByTagName('tbody')[0];
-    table.innerHTML = '';  // Clear existing rows
-
-    users.forEach(user => {
-        const newRow = table.insertRow();
-        newRow.insertCell(0).innerText = user.name;
-        newRow.insertCell(1).innerText = user.email;
-        newRow.insertCell(2).innerText = user.country;
-    });
+    uploadProgress.innerText = '';
+    document.getElementById('uploadForm').reset();
 });
