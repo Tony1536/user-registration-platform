@@ -5,20 +5,19 @@ import os
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+CORS(app)
 
-# Explicit boto3 session (important inside docker in EC2)
 session = boto3.Session(region_name=os.getenv('AWS_REGION', 'us-east-1'))
 
-# DynamoDB client
+# DynamoDB
 dynamodb = session.resource('dynamodb')
-table = dynamodb.Table('users-registration')  # <-- usa la tabla que sí existe
+table = dynamodb.Table('users-registration')
 
-# S3 client
+# S3
 s3 = session.client('s3')
-bucket_name = 'myapp-userfiles'  # <-- reemplaza con tu bucket real
+bucket_name = 'myapp-userfiles'
 
-@app.route('/api/register', methods=['POST'])  # <-- corrige el endpoint
+@app.route('/api/register', methods=['POST'])
 def register():
     data = request.get_json()
     user_id = str(uuid.uuid4())
@@ -28,12 +27,12 @@ def register():
         'name': data['name'],
         'email': data['email'],
         'country': data['country'],
-        'file_s3_key': ''  # initially empty
+        'file_s3_key': ''
     })
 
     return jsonify({'message': 'User registered successfully', 'user_id': user_id})
 
-@app.route('/api/upload', methods=['POST'])  # <-- corrige el endpoint
+@app.route('/api/upload', methods=['POST'])
 def upload():
     file = request.files['file']
     file_key = f"{str(uuid.uuid4())}_{file.filename}"
