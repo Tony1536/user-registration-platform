@@ -16,7 +16,7 @@ s3 = boto3.client('s3', region_name=os.getenv('AWS_REGION', 'us-east-1'))
 bucket_name = 'myapp-userfiles'  # <-- reemplaza con tu bucket real
 
 # Endpoint para registrar usuario
-@app.route('/api/register', methods=['POST'])
+@app.route('/http://http://44.202.160.41:5000/register', methods=['POST'])
 def register():
     try:
         data = request.get_json()
@@ -37,7 +37,7 @@ def register():
         return jsonify({'message': f'Failed to register user. Error: {str(e)}'}), 500
 
 # Endpoint para subir archivo
-@app.route('/api/upload', methods=['POST'])
+@app.route('/http://http://44.202.160.41:5000/upload', methods=['POST'])
 def upload():
     try:
         if 'file' not in request.files:
@@ -60,7 +60,7 @@ def upload():
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
 # Endpoint para obtener lista de usuarios (para que el frontend actualice la tabla)
-@app.route('/api/users', methods=['GET'])
+@app.route('/http://http://44.202.160.41:5000/users', methods=['GET'])
 def get_users():
     try:
         response = table.scan()

@@ -1,4 +1,4 @@
-const backendBaseURL = '/api';
+const backendBaseURL = 'http://http://44.202.160.41:5000';
 
 // Register User
 document.getElementById('registerForm').addEventListener('submit', async function(e) {
@@ -13,7 +13,7 @@ document.getElementById('registerForm').addEventListener('submit', async functio
     try {
         console.log("Sending register request:", userData);
 
-        const response = await fetch(`${backendBaseURL}/register`, {
+        const response = await fetch(`${backendBaseURL}/http://http://44.202.160.41:5000/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(userData)
@@ -61,7 +61,7 @@ document.getElementById('uploadForm').addEventListener('submit', async function(
     try {
         console.log("Sending file upload request:", file.name);
 
-        const response = await fetch(`${backendBaseURL}/upload`, {
+        const response = await fetch(`${backendBaseURL}/http://http://44.202.160.41:5000/upload`, {
             method: 'POST',
             body: formData
         });
