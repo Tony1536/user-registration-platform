@@ -80,3 +80,18 @@ document.getElementById('uploadForm').addEventListener('submit', async function(
         uploadProgress.innerText = `Upload failed: ${error.message}`;
     }
 });
+// Load users on page load
+window.addEventListener('DOMContentLoaded', async function() {
+    const response = await fetch(`${backendBaseURL}/api/users`);
+    const users = await response.json();
+
+    const table = document.getElementById('usersTable').getElementsByTagName('tbody')[0];
+    table.innerHTML = '';  // Clear existing rows
+
+    users.forEach(user => {
+        const newRow = table.insertRow();
+        newRow.insertCell(0).innerText = user.name;
+        newRow.insertCell(1).innerText = user.email;
+        newRow.insertCell(2).innerText = user.country;
+    });
+});

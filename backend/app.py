@@ -59,3 +59,18 @@ def upload():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
+# Endpoint para obtener lista de usuarios (para que el frontend actualice la tabla)
+@app.route('/api/users', methods=['GET'])
+def get_users():
+    try:
+        response = table.scan()
+        items = response.get('Items', [])
+
+        # Opcional: ordenar por name alfabéticamente
+        items.sort(key=lambda x: x.get('name', ''))
+
+        return jsonify(items)
+
+    except Exception as e:
+        print(f"Error getting users: {str(e)}")
+        return jsonify({'message': f'Failed to get users. Error: {str(e)}'}), 500
