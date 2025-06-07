@@ -1,4 +1,5 @@
-const backendBaseURL = 'http://44.202.160.41:5000';
+const backendBaseURL = '/api';
+
 
 // Register User
 document.getElementById('registerForm').addEventListener('submit', async function(e) {
