@@ -11,7 +11,7 @@ document.getElementById('registerForm').addEventListener('submit', async functio
         country: document.getElementById('country').value
     };
 
-    const response = await fetch(`${backendBaseURL}/api/register`, {  // <-- OJO: /api/register
+    const response = await fetch(`${backendBaseURL}/api/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData)
@@ -20,12 +20,14 @@ document.getElementById('registerForm').addEventListener('submit', async functio
     const result = await response.json();
     alert(result.message);
 
+    // Optionally update the users table (demo only — in real app, you'd fetch the list again)
     const table = document.getElementById('usersTable').getElementsByTagName('tbody')[0];
     const newRow = table.insertRow();
     newRow.insertCell(0).innerText = userData.name;
     newRow.insertCell(1).innerText = userData.email;
     newRow.insertCell(2).innerText = userData.country;
 
+    // Reset form
     document.getElementById('registerForm').reset();
 });
 
@@ -42,7 +44,7 @@ document.getElementById('uploadForm').addEventListener('submit', async function(
     const uploadProgress = document.getElementById('uploadProgress');
     uploadProgress.innerText = 'Uploading...';
 
-    const response = await fetch(`${backendBaseURL}/api/upload`, {  // <-- OJO: /api/upload
+    const response = await fetch(`${backendBaseURL}/api/upload`, {
         method: 'POST',
         body: formData
     });
