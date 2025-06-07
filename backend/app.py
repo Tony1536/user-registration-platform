@@ -9,14 +9,14 @@ CORS(app)  # Enable CORS for all routes
 
 # DynamoDB client
 dynamodb = boto3.resource('dynamodb', region_name=os.getenv('AWS_REGION', 'us-east-1'))
-table = dynamodb.Table('users-registration')  # <-- usa la misma que en el código frontend
+table = dynamodb.Table('users-registration')  
 
 # S3 client
 s3 = boto3.client('s3', region_name=os.getenv('AWS_REGION', 'us-east-1'))
-bucket_name = 'myapp-userfiles'  # <-- reemplaza con tu bucket real
+bucket_name = 'myapp-userfiles'  
 
-# Endpoint para registrar usuario
-@app.route('/http://http://44.202.160.41:5000/register', methods=['POST'])
+# Endpoint for users
+@app.route('/register', methods=['POST'])
 def register():
     try:
         data = request.get_json()
@@ -36,8 +36,8 @@ def register():
         print(f"Error registering user: {str(e)}")
         return jsonify({'message': f'Failed to register user. Error: {str(e)}'}), 500
 
-# Endpoint para subir archivo
-@app.route('/http://http://44.202.160.41:5000/upload', methods=['POST'])
+# Endpoint for archive upload
+@app.route('/upload', methods=['POST'])
 def upload():
     try:
         if 'file' not in request.files:
@@ -57,16 +57,14 @@ def upload():
         print(f"Error uploading file: {str(e)}")
         return jsonify({'message': f'Failed to upload file. Error: {str(e)}'}), 500
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
-# Endpoint para obtener lista de usuarios (para que el frontend actualice la tabla)
-@app.route('/http://http://44.202.160.41:5000/users', methods=['GET'])
+# Endpoint 
+@app.route('/api/users', methods=['GET'])
 def get_users():
     try:
         response = table.scan()
         items = response.get('Items', [])
 
-        # Opcional: ordenar por name alfabéticamente
+        
         items.sort(key=lambda x: x.get('name', ''))
 
         return jsonify(items)
@@ -74,3 +72,6 @@ def get_users():
     except Exception as e:
         print(f"Error getting users: {str(e)}")
         return jsonify({'message': f'Failed to get users. Error: {str(e)}'}), 500
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
