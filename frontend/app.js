@@ -1,6 +1,5 @@
 const backendBaseURL = '/api';
 
-
 // Register User
 document.getElementById('registerForm').addEventListener('submit', async function(e) {
     e.preventDefault();
@@ -14,7 +13,7 @@ document.getElementById('registerForm').addEventListener('submit', async functio
     try {
         console.log("Sending register request:", userData);
 
-        const response = await fetch(`${backendBaseURL}/api/register`, {
+        const response = await fetch(`${backendBaseURL}/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(userData)
@@ -62,7 +61,7 @@ document.getElementById('uploadForm').addEventListener('submit', async function(
     try {
         console.log("Sending file upload request:", file.name);
 
-        const response = await fetch(`${backendBaseURL}/api/upload`, {
+        const response = await fetch(`${backendBaseURL}/upload`, {
             method: 'POST',
             body: formData
         });
