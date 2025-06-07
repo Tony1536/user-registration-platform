@@ -9,7 +9,7 @@ CORS(app)  # Enable CORS for all routes
 
 # DynamoDB client
 dynamodb = boto3.resource('dynamodb', region_name=os.getenv('AWS_REGION', 'us-east-1'))
-table = dynamodb.Table('clients-information')  # <-- usa la misma que en el código frontend
+table = dynamodb.Table('users-information')  # <-- usa la misma que en el código frontend
 
 # S3 client
 s3 = boto3.client('s3', region_name=os.getenv('AWS_REGION', 'us-east-1'))
