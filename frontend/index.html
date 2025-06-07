@@ -4,31 +4,123 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>User Registration Platform</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f2f6fa;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        h1, h2 {
+            color: #2c3e50;
+        }
+
+        form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            transition: box-shadow 0.3s ease;
+        }
+
+        form:hover {
+            box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+        }
+
+        label {
+            display: block;
+            margin-top: 12px;
+            font-weight: 600;
+        }
+
+        input[type="text"], input[type="email"], input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 1em;
+        }
+
+        button {
+            margin-top: 18px;
+            padding: 12px 24px;
+            background-color: #3498db;
+            color: white;
+            font-size: 1em;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+
+        th, td {
+            padding: 14px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background-color: #f9f9f9;
+            font-weight: 700;
+            color: #555;
+        }
+
+        tr:hover {
+            background-color: #fafafa;
+        }
+
+        #uploadProgress {
+            margin-top: 10px;
+            font-style: italic;
+            color: #555;
+        }
+
+        .success {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .error {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
     <h1>User Registration</h1>
+
     <form id="registerForm">
         <label>Name:</label>
-        <input type="text" id="name" required><br>
-
+        <input type="text" id="name" required>
         <label>Email:</label>
-        <input type="email" id="email" required><br>
-
+        <input type="email" id="email" required>
         <label>Country:</label>
-        <input type="text" id="country" required><br>
-
-        <button type="submit">Register</button>
+        <input type="text" id="country" required>
+        <button type="submit">Register User</button>
+        <div id="registerFeedback"></div>
     </form>
 
-    <h2>Upload File</h2>
-    <form id="uploadForm" enctype="multipart/form-data">
-        <input type="file" id="fileInput" required>
-        <button type="submit">Upload</button>
-    </form>
-    <p id="uploadProgress"></p>
-
-    <h2>Registered Users (Demo)</h2>
-    <table border="1" id="usersTable">
+    <h2>Registered Users</h2>
+    <table id="usersTable">
         <thead>
             <tr>
                 <th>Name</th>
@@ -36,9 +128,95 @@
                 <th>Country</th>
             </tr>
         </thead>
-        <tbody></tbody>
+        <tbody>
+            <!-- Rows will be added here dynamically -->
+        </tbody>
     </table>
 
-    <script src="app.js"></script>
+    <h1>Upload File to S3</h1>
+
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" id="fileInput" required>
+        <button type="submit">Upload File</button>
+        <div id="uploadProgress"></div>
+    </form>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const registerForm = document.getElementById('registerForm');
+        const uploadForm = document.getElementById('uploadForm');
+        const usersTableBody = document.querySelector('#usersTable tbody');
+        const uploadProgress = document.getElementById('uploadProgress');
+        const registerFeedback = document.getElementById('registerFeedback');
+
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const country = document.getElementById('country').value;
+
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name, email, country })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    registerFeedback.innerHTML = `<p class="success">✅ User registered! User ID: ${result.user_id}</p>`;
+
+                    const newRow = document.createElement('tr');
+                    newRow.innerHTML = `
+                        <td>${name}</td>
+                        <td>${email}</td>
+                        <td>${country}</td>
+                    `;
+                    usersTableBody.appendChild(newRow);
+
+                    registerForm.reset();
+                } else {
+                    registerFeedback.innerHTML = '<p class="error">❌ Failed to register user.</p>';
+                }
+            } catch (error) {
+                console.error(error);
+                registerFeedback.innerHTML = '<p class="error">❌ Error occurred while registering.</p>';
+            }
+        });
+
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            uploadProgress.textContent = '⏳ Uploading...';
+
+            try {
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    uploadProgress.innerHTML = `<span class="success">✅ Upload successful! File Key: ${result.file_key}</span>`;
+                    uploadForm.reset();
+                } else {
+                    uploadProgress.innerHTML = '<span class="error">❌ Failed to upload file.</span>';
+                }
+            } catch (error) {
+                console.error(error);
+                uploadProgress.innerHTML = '<span class="error">❌ Error occurred during upload.</span>';
+            }
+        });
+    });
+    </script>
 </body>
 </html>
